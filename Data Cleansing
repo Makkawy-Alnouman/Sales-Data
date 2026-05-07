@@ -1,0 +1,303 @@
+import pandas as pd 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+from wordcloud import WordCloud
+
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder,OrdinalEncoder,MinMaxScaler,StandardScaler
+from sklearn.pipeline import Pipeline,make_pipeline
+from sklearn.feature_selection import SelectKBest,chi2
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
+from xgboost import XGBRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.decomposition import PCA
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=
+
+## Read Data
+df = pd.read_csv("superstore-dataset-final/Sample - Superstore.csv", encoding='latin1')
+pd.set_option('display.max_columns', None)
+df.head()
+
+# remove unnecessary columns
+df = df.drop(['Row ID', 'Order ID', 'Ship Date', 'Customer ID', 'Customer Name','Product ID','Country','Postal Code'], axis=1)
+
+# check missing values
+print(df.isnull().sum())
+# check duplicate
+print("__________Duplicates__________")
+print(df.duplicated().sum())
+# remove duplicates
+df.drop_duplicates(inplace=True)
+print("Removed Duplicates :")
+print(df.duplicated().sum())
+
+# convert negative values to Positive
+df['Profit'] = df['Profit'].abs()
+
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+
+# Aggregate sales data by month
+monthly_sales = df.groupby(df['Order Date'].dt.to_period('M'))['Sales'].sum()
+monthly_discount = df.groupby(df['Order Date'].dt.to_period('M'))['Discount'].sum()
+monthly_profit = df.groupby(df['Order Date'].dt.to_period('M'))['Profit'].sum()
+
+# Calculate average values
+avg_sales = monthly_sales.mean()
+avg_discount = monthly_discount.mean()
+avg_profit = monthly_profit.mean()
+
+# Aggregate sales data by year
+yearly_sales = df.groupby(df['Order Date'].dt.to_period('Y'))['Sales'].sum()
+yearly_discount = df.groupby(df['Order Date'].dt.to_period('Y'))['Discount'].sum()
+yearly_profit = df.groupby(df['Order Date'].dt.to_period('Y'))['Profit'].sum()
+
+# Create a figure with 2x3 subplots
+plt.figure(figsize=(18, 12))
+
+# Plot monthly sales and discount trend
+plt.subplot(2, 3, 1)
+monthly_sales.plot(kind='line', marker='o', title='Monthly Sales Trend', color='red')
+# add average sales line
+plt.axhline(y=avg_sales, color='black', linestyle='--', label='Average Sales')
+plt.xlabel('Order Date')
+plt.ylabel('Sales')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+monthly_discount.plot(kind='line', marker='o', title='Monthly Discount Trend', color='green')
+plt.axhline(y=avg_discount, color='black', linestyle='--', label='Average Discount')
+plt.xlabel('Order Date')
+plt.ylabel('Discount')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+monthly_profit.plot(kind='line', marker='o', title='Monthly Profit Trend', color='blue')
+# add average profit line
+plt.axhline(y=avg_profit, color='black', linestyle='--', label='Average Profit')
+plt.xlabel('Order Date')
+plt.ylabel('Profit')
+plt.legend()
+plt.grid(True)
+
+# Plot yearly sales trend
+plt.subplot(2, 3, 4)
+yearly_sales.plot(kind='line', marker='o', title='Yearly Sales Trend', color='blue')
+plt.xlabel('Order Date')
+plt.ylabel('Sales')
+plt.grid(True)
+
+# Plot yearly discount trend
+plt.subplot(2, 3, 5)
+yearly_discount.plot(kind='line', marker='o', title='Yearly Discount Trend', color='green')
+plt.xlabel('Order Date')
+plt.ylabel('Discount')
+plt.grid(True)
+
+# Plot yearly profit trend
+plt.subplot(2, 3, 6)
+yearly_profit.plot(kind='line', marker='o', title='Yearly Profit Trend', color='blue')
+plt.xlabel('Order Date')
+plt.ylabel('Profit')
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+# Assuming df is already defined and 'Order Date' is already converted to datetime
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+
+# Filter data for the years 2015 and 2017
+df_2015_2017 = df[(df['Order Date'].dt.year == 2015) | (df['Order Date'].dt.year == 2017)]
+
+# Aggregate data by month
+monthly_data = df_2015_2017.groupby(df_2015_2017['Order Date'].dt.to_period('M')).agg({
+    'Sales': 'sum',
+    'Discount': 'sum',
+    'Profit': 'sum'
+})
+
+# Calculate the monthly averages for each metric
+monthly_avg = monthly_data.groupby(monthly_data.index.year).mean()
+
+# Extract the monthly averages for 2015 and 2017
+avg_sales_2015 = monthly_avg.loc[2015, 'Sales']
+avg_discount_2015 = monthly_avg.loc[2015, 'Discount']
+avg_profit_2015 = monthly_avg.loc[2015, 'Profit']
+
+avg_sales_2017 = monthly_avg.loc[2017, 'Sales']
+avg_discount_2017 = monthly_avg.loc[2017, 'Discount']
+avg_profit_2017 = monthly_avg.loc[2017, 'Profit']
+
+# Print the results
+print(f"Monthly Averages for 2015:")
+print(f"Average Sales: {avg_sales_2015}")
+print(f"Average Discount: {avg_discount_2015}")
+print(f"Average Profit: {avg_profit_2015}")
+
+print(f"\nMonthly Averages for 2017:")
+print(f"Average Sales: {avg_sales_2017}")
+print(f"Average Discount: {avg_discount_2017}")
+print(f"Average Profit: {avg_profit_2017}")
+
+# Create a figure and subplots
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(20, 8))
+
+# Plot Total Sales by State
+df.groupby('State')['Sales'].sum().plot(kind='bar', ax=axes[0], color='red')
+axes[0].set_title('Total Sales by State')
+axes[0].set_xlabel('State')
+axes[0].set_ylabel('Sales')
+
+# Plot Total Profit by State
+df.groupby('State')['Profit'].sum().plot(kind='bar', ax=axes[1], color='blue')
+axes[1].set_title('Total Profit by State')
+axes[1].set_xlabel('State')
+axes[1].set_ylabel('Profit')
+
+# Plot Total Discount by State
+df.groupby('State')['Discount'].sum().plot(kind='bar', ax=axes[2], color='green')
+axes[2].set_title('Total Discount by State')
+axes[2].set_xlabel('State')
+axes[2].set_ylabel('Discount')
+
+# Adjust layout to prevent overlap
+plt.tight_layout()
+
+# Display the plots
+plt.show()
+
+top_states_sales = df.groupby('State')['Sales'].sum().nlargest(10).reset_index()
+top_states_discount = df.groupby('State')['Discount'].sum().nlargest(10).reset_index()
+top_states_profit = df.groupby('State')['Profit'].sum().nlargest(10).reset_index()
+
+
+# Create the figure and subplots
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 6))
+
+# Plot for Sales
+axes[0].barh(top_states_sales['State'], top_states_sales['Sales'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[0].set_title('Top 10 States by Sales', fontsize=16)
+axes[0].set_xlabel('Sales', fontsize=14)
+axes[0].set_ylabel('State', fontsize=14)
+axes[0].invert_yaxis()
+axes[0].tick_params(axis='both', which='major', labelsize=12)
+for i, v in enumerate(top_states_sales['Sales']):
+    axes[0].text(v,i,f'{v:.2f}', va= 'center', ha= 'right', fontsize='10',fontweight='bold')
+
+# Plot for Discount
+axes[1].barh(top_states_discount['State'], top_states_discount['Discount'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[1].set_title('Top 10 States by Discount', fontsize=16)
+axes[1].set_xlabel('Discount', fontsize=14)
+axes[1].set_ylabel('State', fontsize=14)
+axes[1].invert_yaxis()
+axes[1].tick_params(axis='both', which='major', labelsize=12)   
+for i, v in enumerate(top_states_discount['Discount']):
+    axes[1].text(v,i,f'{v:.2f}',ha='right', fontsize='10', fontweight='bold')
+# Plot for Profit
+axes[2].barh(top_states_profit['State'], top_states_profit['Profit'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[2].set_title('Top 10 States by Profit', fontsize=16)
+axes[2].set_xlabel('Profit', fontsize=14)
+axes[2].set_ylabel('State', fontsize=14)
+axes[2].invert_yaxis()
+axes[2].tick_params(axis='both', which='major', labelsize=12)
+for i, v, in enumerate(top_states_profit['Profit']):
+    axes[2].text(v,i,f'{v:.2f}', ha='right', fontsize='10', fontweight='bold')
+
+# Adjust the layout
+plt.tight_layout()
+
+# Ensure 'Order Date' is in datetime format
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+
+# Get the top 10 cities by sales, discount, and profit
+top_city_sales = df.groupby('City')['Sales'].sum().nlargest(10).reset_index()
+top_city_discount = df.groupby('City')['Discount'].sum().nlargest(10).reset_index()
+top_city_profit = df.groupby('City')['Profit'].sum().nlargest(10).reset_index()
+
+# Create the figure and subplots
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 6))
+
+# Plot for Sales
+axes[0].barh(top_city_sales['City'], top_city_sales['Sales'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[0].set_title('Top 10 Cities by Sales', fontsize=16)
+axes[0].set_xlabel('Sales', fontsize=14)
+axes[0].set_ylabel('City', fontsize=14)
+axes[0].invert_yaxis()
+axes[0].tick_params(axis='both', which='major', labelsize=12)
+for i, v in enumerate(top_city_sales['Sales']):
+    axes[0].text(v, i, f'{v:.2f}', va='center', ha='right', fontsize=10, color='black', fontweight='bold')
+
+# Plot for Discount
+axes[1].barh(top_city_discount['City'], top_city_discount['Discount'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[1].set_title('Top 10 Cities by Discount', fontsize=16)
+axes[1].set_xlabel('Discount', fontsize=14)
+axes[1].invert_yaxis()
+axes[1].tick_params(axis='both', which='major', labelsize=12)
+for i, v in enumerate(top_city_discount['Discount']):
+    axes[1].text(v, i, f'{v:.2f}', va='center', ha='right', fontsize=10, color='black', fontweight='bold')
+
+# Plot for Profit
+axes[2].barh(top_city_profit['City'], top_city_profit['Profit'], color='#007d7c', edgecolor='black', linewidth=1)
+axes[2].set_title('Top 10 Cities by Profit', fontsize=16)
+axes[2].set_xlabel('Profit', fontsize=14)
+axes[2].invert_yaxis()
+axes[2].tick_params(axis='both', which='major', labelsize=12)
+for i, v in enumerate(top_city_profit['Profit']):
+    axes[2].text(v, i, f'{v:.2f}', ha='right', fontsize=10, color='black', fontweight='bold')
+
+# Adjust the layout
+plt.tight_layout()
+
+# create a bar chart
+plt.figure(figsize=(10, 6))
+df['Category'].value_counts().plot(kind='bar', color='#007d7c')
+# print values on the bars
+for i, v in enumerate(df['Category'].value_counts()):
+    plt.annotate(str(v), xy=(i, v), ha='center', va='bottom')
+# show the plot 
+plt.show()
+
+plt.figure(figsize=(10,6))
+df['Sub-Category'].value_counts().plot(kind='bar', color='#007d7c')
+# print values on the bars
+for i, v in enumerate(df['Sub-Category'].value_counts()):
+    plt.annotate(str(v), xy=(i, v), ha='center', va='bottom')
+
+# show the plot
+plt.show()
+
+# create pie chart
+plt.figure(figsize=(10, 6))
+df['Ship Mode'].value_counts().plot(kind='pie', autopct='%1.1f%%', colors=['#007d7c', '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c'])   
+
+# show the plot
+
+# create Mosaic Plot:
+plt.figure(figsize=(10, 6))
+
+# create the mosaic plot
+plt.subplot(1, 2, 1)
+plt.title('Segment')
+plt.pie(df['Segment'].value_counts(), labels=df['Segment'].value_counts().index, autopct='%1.1f%%', colors=['#007d7c', '#a6cee3', '#1f78b4'])
+
+# create the bar chart
+plt.subplot(1, 2, 2)
+df['Segment'].value_counts().plot(kind='bar', color='#007d7c')
+# print values on the bars
+for i, v in enumerate(df['Segment'].value_counts()):
+    # print values on the bars
+    plt.annotate(str(v), xy=(i, v), ha='center', va='bottom')
+# show the plot tom
+plt.show()
