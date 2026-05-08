@@ -1,99 +1,88 @@
-# Sales Analytics & Business Insights Dashboard
+Sales Analytics & Business Insights Dashboard
+Project Overview
 
-## Project Overview
-This project focuses on analyzing retail sales data to uncover business insights, identify trends, and support data-driven decision-making. The analysis was performed using Python for data preprocessing and exploratory data analysis, combined with visualizations to highlight key performance indicators (KPIs) and business patterns.
+This project focuses on analyzing retail sales data to uncover business insights, identify trends, and support data-driven decision-making. Using Python and data visualization techniques, the project explores sales performance, profitability, discount behavior, customer segmentation, and geographic trends from the Superstore dataset.
 
-The project explores sales, profit, discount behavior, customer segments, geographic performance, and time-based sales trends using the Superstore dataset.
+The analysis was designed to simulate real-world business intelligence workflows and provide meaningful insights that can help organizations improve operational and sales strategies.
 
----
+Objectives
+Perform data cleaning and preprocessing
+Analyze sales, profit, and discount trends
+Identify high-performing states and cities
+Explore customer segments and product categories
+Create professional business visualizations
+Support data-driven business decisions using analytics
+Technologies Used
+Python
+Pandas
+NumPy
+Matplotlib
+Seaborn
+Plotly
+Jupyter Notebook
+Dataset
 
-## Objectives
-- Clean and preprocess raw sales data
-- Analyze sales, profit, and discount trends
-- Identify top-performing states and cities
-- Explore customer segments and product categories
-- Create business-oriented visualizations and insights
-- Support strategic decision-making through analytics
+Dataset Used:
 
----
+Superstore Sales Dataset
 
-## Technologies Used
-- Python
-- Pandas
-- NumPy
-- Matplotlib
-- Seaborn
-- Plotly
-- Scikit-learn
-- XGBoost
-- Jupyter Notebook
+The dataset includes:
 
----
+Sales
+Profit
+Discounts
+Customer Segments
+Product Categories
+Geographic Information
+Shipping Details
+Order Dates
+Data Cleaning & Preprocessing
 
-## Dataset
-Dataset used:
-- Superstore Sales Dataset
-
-The dataset contains:
-- Orders
-- Sales
-- Profit
-- Discounts
-- Customer Segments
-- Product Categories
-- Geographic Information
-- Shipping Information
-
----
-
-## Data Cleaning & Preprocessing
 The following preprocessing steps were performed:
-- Removed unnecessary columns
-- Removed duplicate records
-- Checked for missing values
-- Converted date columns to datetime format
-- Transformed negative profit values
-- Created monthly and yearly aggregated metrics
 
----
+Removed unnecessary columns
+Removed duplicate records
+Checked for missing values
+Converted date columns into datetime format
+Created new features such as:
+Order Year
+Order Month
+Profit Margin
 
-## Exploratory Data Analysis (EDA)
+Profit Margin Formula:
 
-### Time-Based Analysis
-- Monthly Sales Trend
-- Monthly Discount Trend
-- Monthly Profit Trend
-- Yearly Sales Growth
-- Yearly Profit Analysis
+\text{Profit Margin} = \frac{\text{Profit}}{\text{Sales}} \times 100
 
-### Geographic Analysis
-- Sales by State
-- Profit by State
-- Discount by State
-- Top 10 Cities by Sales
-- Top 10 Cities by Profit
+Exploratory Data Analysis (EDA)
+Time-Based Analysis
+Monthly Sales Trend
+Monthly Profit Trend
+Monthly Discount Trend
+Yearly Sales Analysis
+Yearly Profit Analysis
+Geographic Analysis
+Top States by Sales
+Top States by Profit
+Top States by Discount
+Top Cities by Sales
+Top Cities by Profit
+Product & Customer Analysis
+Product Category Distribution
+Sub-Category Analysis
+Customer Segment Analysis
+Shipping Mode Distribution
+Key Insights
+Sales generally increased over time, indicating business growth.
+Some states and cities contributed significantly more revenue and profit than others.
+Discounts had a noticeable impact on profitability in several regions.
+Technology and Office Supplies categories showed strong performance.
+Customer purchasing behavior differed across segments.
+Visualizations Included
 
-### Product & Customer Analysis
-- Category Distribution
-- Sub-Category Distribution
-- Shipping Mode Analysis
-- Customer Segment Analysis
-
----
-
-## Key Insights
-- Certain states and cities consistently generated higher sales and profit.
-- Discounts had a noticeable impact on profitability.
-- Technology and Office Supplies categories contributed significantly to sales performance.
-- Sales and profit trends showed seasonal patterns over time.
-- Customer segments demonstrated different purchasing behaviors.
-
----
-
-## Visualizations
 The project includes:
-- Line Charts
-- Bar Charts
-- Horizontal Bar Charts
-- Pie Charts
-- Comparative Trend Analysis
+
+Line Charts
+Bar Charts
+Horizontal Bar Charts
+Pie Charts
+Comparative Trend Analysis
